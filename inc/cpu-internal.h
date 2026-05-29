@@ -32,11 +32,19 @@ word pc;                //Program Counter
 byte sp;                //Stack Pointer
 byte a,x,y ;            // Registers
 byte flag;              //Flags
-byte cpu_ram[0xFFFF];   //RAM
+byte cpu_ram[0x800];   //RAM
 
 } CPU;
 
 
-void (*OPCODES[256])();
+
+
+typedef struct 
+{
+    void (*OPCODES)(CPU*);
+    
+} Instruction;
+ 
+
 
 #endif
