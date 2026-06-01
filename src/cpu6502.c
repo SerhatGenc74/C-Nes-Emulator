@@ -1,7 +1,7 @@
 #include "cpu6502.h"
 
 //https://www.nesdev.org/wiki/CPU_memory_map
-byte cpu_read(CPU *cpu,word address)
+u8 cpu_read(CPU *cpu,u16 address)
 {
     //INTERNAL RAM
     if (address >= 0x0000 && address <= 0x07FF)
@@ -20,7 +20,7 @@ byte cpu_read(CPU *cpu,word address)
     }
     
 }
-void cpu_write(CPU* cpu,word address,byte data)
+void cpu_write(CPU* cpu,u16 address,u8 data)
 {
      if (address >= 0x0000 && address <= 0x07FF)
     {
@@ -47,7 +47,12 @@ void cpu_reset(CPU *cpu)
 
     cpu->sp = 0xFD;
     cpu->pc = 0xFFFC;
-    cpu->flag = FLAG_INTERRUPT | FLAG_UNUSED; // Interrupt flag raise 1 and unusde always 1
+    cpu->flag = FLAG_INTERRUPT | FLAG_UNUSED; // Interrupt flag raise 1 and unusde always 1c
 
+    //Program start address
+    u8 lo = cpu_read(cpu,0xFFFC);
+    u8 hi = cpu_read(cpu,0xFFFD);
+
+    cpu->pc = (hi << 8) | lo;
 
 }
