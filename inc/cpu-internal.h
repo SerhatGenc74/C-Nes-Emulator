@@ -36,6 +36,7 @@ typedef struct
 
     u8 fetched_data;
     u16 address_abs;
+    u8 opcode;
 } CPU;
 
 typedef struct
