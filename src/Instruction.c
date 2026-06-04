@@ -16,7 +16,7 @@ void ADC(CPU *cpu)
     {
         cpu->flag &= ~FLAG_CARRY;
     }
-    if (result == 0)
+    if ((u8)result == 0)
     {
         cpu->flag |= FLAG_ZERO;
     }
@@ -43,14 +43,14 @@ void ADC(CPU *cpu)
         cpu->flag &= ~FLAG_OVERFLOW;
     }
     // Can make (u8)result
-    cpu->a = result & 0x00F;
+    cpu->a = result & 0x00FF;
 }
 
 // Bitwise AND
 void AND(CPU *cpu)
 {
     u16 result = (u16)cpu->a & (u16)cpu->fetched_data;
-    if (result == 0)
+    if ((u8)result == 0)
     {
         cpu->flag |= FLAG_ZERO;
     }
@@ -84,7 +84,7 @@ void ASL(CPU *cpu)
     {
         cpu->flag &= ~FLAG_CARRY;
     }
-    if (result == 0)
+    if ((u8)result == 0)
     {
         cpu->flag |= FLAG_ZERO;
     }
@@ -147,7 +147,7 @@ void BEQ(CPU *cpu)
 void BIT(CPU *cpu)
 {
     u8 result = cpu->a & cpu->fetched_data;
-    if (result == 0)
+    if ((u8)result == 0)
     {
         cpu->flag |= FLAG_ZERO;
     }
@@ -155,7 +155,7 @@ void BIT(CPU *cpu)
     {
         cpu->flag &= ~FLAG_ZERO;
     }
-    if (result & FLAG_OVERFLOW)
+    if (cpu->fetched_data & FLAG_OVERFLOW)
     {
           cpu->flag |= FLAG_OVERFLOW;
     }
@@ -163,7 +163,7 @@ void BIT(CPU *cpu)
     {
         cpu->flag &= ~FLAG_OVERFLOW;
     }
-    if (result & FLAG_NEGATIVE)
+    if (cpu->fetched_data & FLAG_NEGATIVE)
     {
         cpu->flag |= FLAG_NEGATIVE;
     }
@@ -198,7 +198,7 @@ void BNE(CPU *cpu)
 }
 void BPL(CPU *cpu)
 {
-    if (cpu->flag & FLAG_ZERO)
+    if ((cpu->flag & FLAG_ZERO) == 0)
     {
         
         int8_t offset = (int8_t)cpu->fetched_data;
@@ -209,6 +209,19 @@ void BPL(CPU *cpu)
 }
 void BRK(CPU *cpu)
 {
+    u16 address = cpu->pc + 2;
+
+    u8 hi = (address >> 8) & 0x00FF;
+    u8 lo = (address) & 0x00FF;
+
+    cpu_write(cpu,0x0100 + cpu->sp,hi);
+    cpu->sp--;
+    cpu_write(cpu,0x0100 + cpu->sp,lo);
+    cpu->sp--;
+
+    cpu_write(cpu,0x0100 + cpu->sp,cpu->flag);
+
+    cpu->pc = 0xFFFE;
 }
 void BVC(CPU *cpu)
 {
@@ -250,51 +263,354 @@ void CLV(CPU *cpu)
 }
 void CMP(CPU *cpu)
 {
+    u16 result = (u16)cpu->a - (u16)cpu->fetched_data;
+
+    if (cpu->a >= cpu->fetched_data)
+    {
+        cpu->flag |= FLAG_CARRY;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_CARRY;
+    }
+    if ((u8)result == 0)
+    {
+        cpu->flag |= FLAG_ZERO ;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_ZERO;
+    }
+    
+     if (result & FLAG_NEGATIVE)
+    {
+        cpu->flag |= FLAG_NEGATIVE;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_NEGATIVE;
+    }
+
     
 }
 void CPX(CPU *cpu)
 {
-   
+    u16 result = (u16)cpu->x - (u16)cpu->fetched_data;
+
+    if (cpu->x >= cpu->fetched_data)
+    {
+        cpu->flag |= FLAG_CARRY;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_CARRY;
+    }
+    if ((u8)result == 0)
+    {
+        cpu->flag |= FLAG_ZERO ;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_ZERO;
+    }
+    
+     if (result & FLAG_NEGATIVE)
+    {
+        cpu->flag |= FLAG_NEGATIVE;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_NEGATIVE;
+    }
 }
 void CPY(CPU *cpu)
 {
+     u16 result = (u16)cpu->y - (u16)cpu->fetched_data;
+
+    if (cpu->y >= cpu->fetched_data)
+    {
+        cpu->flag |= FLAG_CARRY;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_CARRY;
+    }
+    if ((u8)result == 0)
+    {
+        cpu->flag |= FLAG_ZERO ;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_ZERO;
+    }
+    
+     if (result & FLAG_NEGATIVE)
+    {
+        cpu->flag |= FLAG_NEGATIVE;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_NEGATIVE;
+    }
 }
 void DEC(CPU *cpu)
 {
+    u16 result = cpu->fetched_data - 0x01;
+
+    if ((u8)result == 0)
+    {
+        cpu->flag |= FLAG_ZERO;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_ZERO;
+    }
+
+    if (result & FLAG_NEGATIVE)
+    {
+        cpu->flag |= FLAG_NEGATIVE;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_NEGATIVE;
+    }
+    cpu->fetched_data = result & 0x00FF;
+    
 }
 void DEX(CPU *cpu)
 {
+
+    u16 result = cpu->x - 0x01;
+
+    if ((u8)result == 0)
+    {
+        cpu->flag |= FLAG_ZERO;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_ZERO;
+    }
+
+    if (result & FLAG_NEGATIVE)
+    {
+        cpu->flag |= FLAG_NEGATIVE;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_NEGATIVE;
+    }
+    cpu->x = result & 0x00FF;
+    
 }
 void DEY(CPU *cpu)
 {
+
+    u16 result = cpu->y - 0x01;
+
+    if ((u8)result == 0)
+    {
+        cpu->flag |= FLAG_ZERO;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_ZERO;
+    }
+
+    if (result & FLAG_NEGATIVE)
+    {
+        cpu->flag |= FLAG_NEGATIVE;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_NEGATIVE;
+    }
+    cpu->y = result & 0x00FF;
+    
 }
 
 void EOR(CPU *cpu)
 {
+
+    u16 result = cpu->a ^ cpu->fetched_data;
+
+    if ((u8)result == 0)
+    {
+        cpu->flag |= FLAG_ZERO;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_ZERO;
+    }
+
+    if (result & FLAG_NEGATIVE)
+    {
+        cpu->flag |= FLAG_NEGATIVE;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_NEGATIVE;
+    }
+    cpu->a = result & 0x00FF;
+    
 }
 void INC(CPU *cpu)
 {
+    u16 result = cpu->fetched_data + 0x01;
+
+    if ((u8)result == 0)
+    {
+        cpu->flag |= FLAG_ZERO;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_ZERO;
+    }
+
+    if (result & FLAG_NEGATIVE)
+    {
+        cpu->flag |= FLAG_NEGATIVE;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_NEGATIVE;
+    }
+    cpu->fetched_data = result & 0x00FF;
 }
 void INX(CPU *cpu)
 {
+    u16 result = cpu->x + 0x01;
+
+    if ((u8)result == 0)
+    {
+        cpu->flag |= FLAG_ZERO;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_ZERO;
+    }
+
+    if (result & FLAG_NEGATIVE)
+    {
+        cpu->flag |= FLAG_NEGATIVE;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_NEGATIVE;
+    }
+    cpu->x = result & 0x00FF;
 }
 void INY(CPU *cpu)
 {
+     u16 result = cpu->y + 0x01;
+
+    if ((u8)result == 0)
+    {
+        cpu->flag |= FLAG_ZERO;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_ZERO;
+    }
+
+    if (result & FLAG_NEGATIVE)
+    {
+        cpu->flag |= FLAG_NEGATIVE;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_NEGATIVE;
+    }
+    cpu->y = result & 0x00FF;
 }
 void JMP(CPU *cpu)
 {
+    cpu->pc = cpu->fetched_data;
 }
 void JSR(CPU *cpu)
 {
-}
+    u16 adres = cpu->pc + 2;
+
+    u8 hi = (cpu->sp >> 8 & 0x00FF);
+    u8 lo = (cpu->sp & 0x00FF);
+
+    //write to stack 
+    cpu_write(cpu,0x0100 + adres,hi);
+    cpu->sp--;
+
+    cpu_write(cpu,0x0100 + adres,lo);
+    cpu->sp--;
+
+    cpu->pc = cpu->fetched_data;
+
+}   
 void LDA(CPU *cpu)
 {
+    u8 result = cpu->fetched_data;
+
+    if ((u8)result == 0)
+    {
+        cpu->flag |= FLAG_ZERO;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_ZERO;
+    }
+
+    if (result & FLAG_NEGATIVE)
+    {
+        cpu->flag |= FLAG_NEGATIVE;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_NEGATIVE;
+    }
+    cpu->a = result;
 }
 void LDX(CPU *cpu)
 {
+     u8 result = cpu->fetched_data;
+
+    if ((u8)result == 0)
+    {
+        cpu->flag |= FLAG_ZERO;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_ZERO;
+    }
+
+    if (result & FLAG_NEGATIVE)
+    {
+        cpu->flag |= FLAG_NEGATIVE;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_NEGATIVE;
+    }
+    cpu->x = result;
 }
 void LDY(CPU *cpu)
 {
+     u8 result = cpu->fetched_data;
+
+    if ((u8)result == 0)
+    {
+        cpu->flag |= FLAG_ZERO;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_ZERO;
+    }
+
+    if (result & FLAG_NEGATIVE)
+    {
+        cpu->flag |= FLAG_NEGATIVE;
+    }
+    else
+    {
+        cpu->flag &= ~FLAG_NEGATIVE;
+    }
+    cpu->y = result;
 }
 void LSR(CPU *cpu)
 {
